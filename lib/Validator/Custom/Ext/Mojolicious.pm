@@ -65,11 +65,11 @@ Validator::Custom::Ext::Mojolicious - Validator for Mojolicious
 
 =head1 VERSION
 
-Version 0.0101
+Version 0.0102
 
 =cut
 
-our $VERSION = '0.0101';
+our $VERSION = '0.0102';
 
 =head1 SYNOPSIS
 
@@ -78,35 +78,31 @@ our $VERSION = '0.0101';
     
     use Validator::Custom::Ext::Mojolicious;
     
-    __PACKAGE__->attr(validator => sub { Validator::Custom::Ext::Mojolicious->new });
-    
-    sub startup {
-        my $self = shift;
+    __PACKAGE__->attr(validator => sub {
         
-        $self->validator->validator_class('Validator::Custom::HTMLForm');
-        
-        $self->validator->validation_rules(
-            'create#default' => [
-                title => [
-                    [{length => [0, 255]}, 'Title is too long']
+        return Validator::Custom::Ext::Mojolicious->new(
+            validator_class  => 'Validator::Custom::HTMLForm',
+            validation_rules => [
+                'create#default' => [
+                    title => [
+                        [{length => [0, 255]}, 'Title is too long']
+                    ],
+                    brash => [
+                        ['not_blank', 'Select brach'],
+                        [{'in_array' => [qw/bash cpp c-sharp css delphi diff groovy java javascript perl
+                                            php plain python ruby scala sql vb xml invaid/]},
+                         'Brash is invalid']
+                    ],
+                    content => [
+                        [ 'not_blank',           "Input content"],
+                        [ {length => [0, 4096]}, "Content is too long"]
+                    ]
                 ],
-                brash => [
-                    ['not_blank', 'Select brach'],
-                    [{'in_array' => [qw/bash cpp c-sharp css delphi diff groovy java javascript perl
-                                        php plain python ruby scala sql vb xml invaid/]},
-                     'Brash is invalid']
-                ],
-                content => [
-                    [ 'not_blank',           "Input content"],
-                    [ {length => [0, 4096]}, "Content is too long"]
+                'example#welcome' => [
+                    # ...
                 ]
-            ],
-            'example#welcome' => [
-                # ...
             ]
         );
-        
-        # Something else
         
     });
     
