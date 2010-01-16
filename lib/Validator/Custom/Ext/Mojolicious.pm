@@ -65,11 +65,11 @@ Validator::Custom::Ext::Mojolicious - Validator for Mojolicious
 
 =head1 VERSION
 
-Version 0.0102
+Version 0.0103
 
 =cut
 
-our $VERSION = '0.0102';
+our $VERSION = '0.0103';
 
 =head1 SYNOPSIS
 
@@ -82,16 +82,14 @@ our $VERSION = '0.0102';
         
         return Validator::Custom::Ext::Mojolicious->new(
             validator_class  => 'Validator::Custom::HTMLForm',
-            validation_rules => [
+            validation_rules => {
                 'create#default' => [
                     title => [
                         [{length => [0, 255]}, 'Title is too long']
                     ],
                     brash => [
                         ['not_blank', 'Select brach'],
-                        [{'in_array' => [qw/bash cpp c-sharp css delphi diff groovy java javascript perl
-                                            php plain python ruby scala sql vb xml invaid/]},
-                         'Brash is invalid']
+                        [{'in_array' => [qw/bash cpp c-sharp/]}, 'Brash is invalid']
                     ],
                     content => [
                         [ 'not_blank',           "Input content"],
@@ -101,7 +99,7 @@ our $VERSION = '0.0102';
                 'example#welcome' => [
                     # ...
                 ]
-            ]
+            }
         );
         
     });
