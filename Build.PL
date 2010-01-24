@@ -12,7 +12,7 @@ my $builder = Module::Build->new(
     },
     requires => {
         'Validator::Custom' => 0.0701,
-        'Object::Simple' => 2.1203
+        'Object::Simple' => 3.0202
     },
     add_to_cleanup      => [ 'Validator-Custom-Ext-Mojolicious-*' ],
     create_makefile_pl => 'traditional',

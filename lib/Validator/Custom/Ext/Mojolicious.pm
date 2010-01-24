@@ -1,5 +1,5 @@
 package Validator::Custom::Ext::Mojolicious;
-use base 'Object::Simple::Base';
+use base 'Object::Simple';
 
 use warnings;
 use strict;
@@ -65,11 +65,11 @@ Validator::Custom::Ext::Mojolicious - Validator for Mojolicious
 
 =head1 VERSION
 
-Version 0.0103
+Version 0.0104
 
 =cut
 
-our $VERSION = '0.0103';
+our $VERSION = '0.0104';
 
 =head1 SYNOPSIS
 

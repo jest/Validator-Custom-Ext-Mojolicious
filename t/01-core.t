@@ -8,17 +8,17 @@ __PACKAGE__->add_constraint(
 );
 
 package Parameters;
-use base 'Object::Simple::Base';
+use base 'Object::Simple';
 
 __PACKAGE__->attr('to_hash');
 
 package Request;
-use base 'Object::Simple::Base';
+use base 'Object::Simple';
 
 __PACKAGE__->attr(params => sub {Parameters->new});
 
 package Controller;
-use base 'Object::Simple::Base';
+use base 'Object::Simple';
 
 __PACKAGE__->attr('stash');
 __PACKAGE__->attr(req => sub {Request->new});
