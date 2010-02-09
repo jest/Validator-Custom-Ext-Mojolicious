@@ -1,75 +1,71 @@
 package Validator::Custom::Ext::Mojolicious;
-use base 'Object::Simple';
 
 use warnings;
 use strict;
+
+use base 'Object::Simple';
+
 use Carp 'croak';
 
-__PACKAGE__->attr('validation_rules' => sub { {} });
-
-__PACKAGE__->attr('validator_class');
+__PACKAGE__->attr(rules => sub { {} });
+__PACKAGE__->attr('validator');
 
 sub validate {
     my ($self, $c) = @_;
     
-    # Controller
-    my $controller = $c->stash->{controller} || '';
-    
-    # Action
-    my $action = $c->stash->{action} || '';
+    # Name
+    my $name = $c->match->endpoint->name;
     
     # Validation rule
-    my $validation_rule = $self->validation_rules->{"$controller#$action"} || [];
+    my $rule = $self->rules->{$name} || [];
     
     # Params
     my $params = $c->req->params->to_hash || {};
-
-    # Validator class
-    my $validator_class = $self->validator_class;
+    
+    my $validator = $self->validator;
     
     # Not exsits 'validator'
-    croak "'validator_class' must be specified"
-      unless $validator_class;
-    
-    # Validator
-    my $validator;
-    
-    # Object
-    if (ref $validator_class) { $validator = $validator_class }
+    croak "'validator' must be specified"
+      unless $validator;
     
     # Class
-    elsif (! ref $validator_class) {
+    unless (ref $validator) {
         
         # Load
-        unless ($validator_class->can('isa')) {
-            eval "require $validator_class";
+        unless ($validator->can('isa')) {
+            eval "require $validator";
             croak $@ if $@;
         }
         
         # New
-        $validator = $validator_class->new;
+        $validator = $validator->new;
     }
     
-    croak "'validator_class' must be 'Validator::Custom' subclass or object"
-      unless $validator_class->isa('Validator::Custom');
+    # Not subclass of Validator::Custom
+    croak "'validator' must be 'Validator::Custom' subclass or object"
+      unless $validator->isa('Validator::Custom');
     
     # Validate
-    my $result = $validator->validate($params, $validation_rule);
+    my $result = $validator->validate($params, $rule);
     
     return $result;
 }
 
 =head1 NAME
 
-Validator::Custom::Ext::Mojolicious - Validator for Mojolicious
+Validator::Custom::Ext::Mojolicious - Mojolicious validator
 
 =head1 VERSION
 
-Version 0.0104
+Version 0.0301
 
 =cut
 
-our $VERSION = '0.0104';
+our $VERSION = '0.0301';
+
+=head1 STATE
+
+This module is not stable.
 
 =head1 SYNOPSIS
 
@@ -81,9 +77,9 @@ our $VERSION = '0.0104';
     __PACKAGE__->attr(validator => sub {
         
         return Validator::Custom::Ext::Mojolicious->new(
-            validator_class  => 'Validator::Custom::HTMLForm',
-            validation_rules => {
-                'create#default' => [
+            validator  => 'Validator::Custom::HTMLForm',
+            rules => {
+                create => [
                     title => [
                         [{length => [0, 255]}, 'Title is too long']
                     ],
@@ -96,13 +92,21 @@ our $VERSION = '0.0104';
                         [ {length => [0, 4096]}, "Content is too long"]
                     ]
                 ],
-                'example#welcome' => [
+                index => [
                     # ...
                 ]
             }
         );
         
     });
+    
+    sub startup {
+        my $self = shift;
+        
+        my $r = $self->routes;
+        $r->route(..)->name('create');
+        $r->route(..)->name('index');
+    }
     
     package YourApp::Create;
     use base 'Mojolicious::Controller';
@@ -118,25 +122,25 @@ our $VERSION = '0.0104';
         }
     }
 
-=head1 Attributes
+=head1 ATTRIBUTES
 
-=head2 validator_class
+=head2 validator
 
-    $v->validator_class('Validator::Custom::HTMLForm');
+    $v->validator('Validator::Custom::HTMLForm');
 
 This class must be L<Validator::Custom> subclass like L<Validator::Custom::HTMLForm>.
 
 You can also set object, not class
     
     my $vc = Validator::Custom::HTMLForm->new(error_stock => 0);
-    $v->validator_class($vc);
+    $v->validator($vc);
 
-=head2 validation_rules
+=head2 rules
 
 You can set validation rules correspond to controller and action pair.
 Constoller and action must be join '#'. 
 
-    $v->validation_rules({
+    $v->rules({
         'create#default' => [
             title => [
                 [{length => [0, 255]}, 'title is too long']
@@ -158,7 +162,7 @@ Constoller and action must be join '#'.
 
 Validation rule is explained L<Validator::Custom> documentation.
 
-=head1 Methods
+=head1 METHODS
 
 L<Validator::Custom::Ext::Mojolicious> inherits all methods from
 L<Object::Simple::Base> and implements the following new ones.
@@ -172,11 +176,11 @@ Validate received data
 This method receive L<Mojolicious::Controller> object. and validate request parameters.
 and return validation rusult. This result is L<Validator::Custom::Result> object.
 
-=head1 Author
+=head1 AUTHOR
 
 Yuki Kimoto, C<< <kimoto.yuki at gmail.com> >>
 
-=head1 Copyright & License
+=head1 COPYRIGHT & LICENSE
 
 Copyright 2009 Yuki Kimoto, all rights reserved.
 

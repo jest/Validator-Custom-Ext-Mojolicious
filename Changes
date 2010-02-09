@@ -1,3 +1,7 @@
+0.0301
+  rename "validation_rules" to "rules"
+  rename "validator_class" to "validator"
+  validate using endpoint name, not controller and action pair
 0.0104
   fix some bug
 0.0103
