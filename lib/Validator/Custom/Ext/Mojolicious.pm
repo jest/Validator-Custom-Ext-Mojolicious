@@ -69,79 +69,62 @@ This module is not stable.
 
 =head1 SYNOPSIS
 
-    package YourApp;
-    use base 'Mojolicious';
+    use Mojolicious::Lite;
     
     use Validator::Custom::Ext::Mojolicious;
     
-    __PACKAGE__->attr(validator => sub {
-        
-        return Validator::Custom::Ext::Mojolicious->new(
-            validator  => 'Validator::Custom::HTMLForm',
-            rules => {
-                create => [
-                    title => [
-                        [{length => [0, 255]}, 'Title is too long']
-                    ],
-                    brash => [
-                        ['not_blank', 'Select brach'],
-                        [{'in_array' => [qw/bash cpp c-sharp/]}, 'Brash is invalid']
-                    ],
-                    content => [
-                        [ 'not_blank',           "Input content"],
-                        [ {length => [0, 4096]}, "Content is too long"]
-                    ]
+    my $validator = Validator::Custom::Ext::Mojolicious->new(
+        validator  => 'Validator::Custom::HTMLForm',
+        rules => {
+            create => [
+                title => [
+                    [{length => [0, 255]}, 'Title is too long']
                 ],
-                index => [
-                    # ...
+                brash => [
+                    ['not_blank', 'Select brach'],
+                    [{'in_array' => [qw/bash cpp c-sharp/]}, 'Brash is invalid']
+                ],
+                content => [
+                    [ 'not_blank',           "Input content"],
+                    [ {length => [0, 4096]}, "Content is too long"]
                 ]
-            }
-        );
-        
-    });
+            ],
+            index => [
+                # ...
+            ]
+        }
+    );
     
-    sub startup {
-        my $self = shift;
-        
-        my $r = $self->routes;
-        $r->route(..)->name('create');
-        $r->route(..)->name('index');
-    }
-    
-    package YourApp::Create;
-    use base 'Mojolicious::Controller';
-
-    sub default { 
+    post '/create' => sub {
         my $self = shift;
         
         # Validate
-        my $vresult = $self->app->validator->validate($self);
+        my $vresult = $validator->validate($self);
         
         unless ($vresult->is_valid) {
            # Someting 
-        }
-    }
+        }        
+    
+    } => 'create'; # Route name
 
 =head1 ATTRIBUTES
 
 =head2 validator
 
-    $v->validator('Validator::Custom::HTMLForm');
+    $validator->validator('Validator::Custom::HTMLForm');
 
 This class must be L<Validator::Custom> subclass like L<Validator::Custom::HTMLForm>.
 
 You can also set object, not class
     
-    my $vc = Validator::Custom::HTMLForm->new(error_stock => 0);
-    $v->validator($vc);
+    $validator->validator(Validator::Custom::HTMLForm->new(error_stock => 0));
 
 =head2 rules
 
-You can set validation rules correspond to controller and action pair.
-Constoller and action must be join '#'. 
+You can set validation rules correspond to route name.
 
-    $v->rules({
-        'create#default' => [
+    $validator->rules({
+        'create' => [
             title => [
                 [{length => [0, 255]}, 'title is too long']
             ],
@@ -155,12 +138,12 @@ Constoller and action must be join '#'.
                 [ {length => [0, 4096]}, 'Conten is too long']
             ]
         ],
-        'action#controller' =>[
+        'index' =>[
                 # ...
         ]
     });
 
-Validation rule is explained L<Validator::Custom> documentation.
+Validation rule is explained in L<Validator::Custom>.
 
 =head1 METHODS
 
@@ -171,7 +154,7 @@ L<Object::Simple::Base> and implements the following new ones.
 
 Validate received data
 
-    my $vresult = $v->validate($c);
+    my $vresult = $validator->validate($c);
     
 This method receive L<Mojolicious::Controller> object. and validate request parameters.
 and return validation rusult. This result is L<Validator::Custom::Result> object.
