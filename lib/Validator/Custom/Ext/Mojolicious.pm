@@ -20,7 +20,7 @@ sub validate {
     my $rule = $self->rules->{$name} || [];
     
     # Params
-    my $params = $c->req->params->to_hash || {};
+    my $params = $c->stash('params')->to_hash || {};
     
     my $validator = $self->validator;
     
